@@ -6,6 +6,9 @@ library(data.table)
 library(gtools)
 library(ALL)
 
+#patients with a neoplasm dx
+neoplasm_pts<- read.csv("~/Desktop/trinetx/oncdx_ids.csv")
+
 ####Medication table
 medication_table<- fread("~/Desktop/trinetx/medication_ingredient.csv")
 medication_table<- medication_table %>% select("patient_id","code", "start_date")
@@ -55,12 +58,14 @@ all_ici<- smartbind(medication_table_ici, procedure_table_ici)
 all_ici$unique<- paste(all_ici$patient_id,all_ici$medication,all_ici$ici_julian_startdate)
 all_ici_unique <- all_ici %>% distinct(unique, .keep_all = TRUE)
 all_ici_unique<- all_ici_unique %>% select(patient_id,medication,ici_calendar_startdate,ici_julian_startdate)
-write.csv(all_ici_unique, "~/Desktop/trinetx/all_ici_rows_061223.csv")
+all_ici_unique<- subset(all_ici_unique, patient_id %in% neoplasm_pts$x)
+
+write.csv(all_ici_unique, "~/Desktop/trinetx/all_ici_rows_061323.csv")
 
 
 
 ####Every unique administration of ICI up to 12-31-2021,julain date 18992
-all_ici_unique<- read.csv("~/Desktop/trinetx/all_ici_rows_061223.csv")
+all_ici_unique<- read.csv("~/Desktop/trinetx/all_ici_rows_061323.csv")
 all_ici_unique<- all_ici_unique %>% filter(ici_julian_startdate<18993)
 all_ici_unique<- all_ici_unique %>% select(patient_id,ici_julian_startdate) %>% group_by(patient_id) %>% arrange(ici_julian_startdate,.by_group = TRUE) %>% as.data.frame()
 all_ici_unique$ici_julian_startdate<- as.numeric(all_ici_unique$ici_julian_startdate)
@@ -72,24 +77,24 @@ all_ici_unique_col<- as.data.frame(all_ici_unique_col)
 all_ici_unique_col<- aggregate(all_ici_unique_col[,2:308], by= list(all_ici_unique_col$patient_id),FUN= max)
 names(all_ici_unique_col)[names(all_ici_unique_col) == 'Group.1'] <- 'patient_id'
 
+demographics<- read.csv("~/Desktop/trinetx/patient.csv")
+all_info<- merge(all_ici_unique_col, demographics, all.x = TRUE, by=c("patient_id"))
+
+
+
 ###start date of each respective ici
-all_ici_unique<- read.csv("~/Desktop/trinetx/all_ici_rows_061223.csv")
+all_ici_unique<- read.csv("~/Desktop/trinetx/all_ici_rows_061323.csv")
 all_ici_unique<- all_ici_unique[,c("patient_id",    "medication", "ici_calendar_startdate", "ici_julian_startdate")]
 length(unique(all_ici_unique$patient_id))
 all_ici_unique_min<- aggregate(all_ici_unique$ici_julian_startdate, by= list(all_ici_unique$patient_id,all_ici_unique$medication),FUN= min)
 colnames(all_ici_unique_min)<- c("patient_id","medication","first_medication_jul_date")
 all_ici_unique_min<- all_ici_unique_min %>% group_by(patient_id,medication) %>% arrange(first_medication_jul_date,.by_group = TRUE) %>% as.data.frame()
 all_ici_unique_min<- all_ici_unique_min %>% pivot_wider(values_from = first_medication_jul_date,names_from = medication) %>% as.data.frame()
-all_ici_unique_min<- all_ici_unique_min %>% select(-c("counter"))
-start_date_incidence<- merge(all_ici_unique_min,all_ici_unique_col,by= c("patient_id"))
 
-demographics<- read.csv("~/Desktop/trinetx/patient.csv")
-all_info<- merge(start_date_incidence, demographics, all.x = TRUE, by=c("patient_id"))
-all_info<- all_info[,c(1,318:327,2:10,11:317)]
-write.csv(all_info, "~/Desktop/trinetx/ici_incidence_start_end2021_demo_061223.csv")
-length(unique(all_info$patient_id))
+start_date_incidence<- merge(all_info,all_ici_unique_min,by= c("patient_id"))
+start_date_incidence<- start_date_incidence[,c(1,309:327,2:308)]
 
-
+write.csv(start_date_incidence, "~/Desktop/trinetx/all_cardio_ae_ici_demo_061323.csv")
 
 
 
