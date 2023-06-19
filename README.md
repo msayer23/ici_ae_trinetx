@@ -12,9 +12,19 @@
 
 ###patient.csv
 #contains patient background info like date of birth, death, race/ethnicity, region etc. 
-
-
+#
+#
+#
+#
+#
 #######Processed files created from trinetx raw files
+
+###firstici_firstae_dateoficis_061323.csv
+#an additonal file from the cardiac ae analysis table. has each patient, dates of their first ici admin and each ici was received. additionally the cardiac ae and the date as well as patient demographic info
+
+###all_cardio_ae_ici_demo_061323.csv
+#this file has each unique cardiac adverse event along with accompnaying patient info for each row. all events listed are adverse events meeting inclusion exclusion criteria
+#coming from cardoaes.R file
 
 ###all_ici_rows_061323.csv
 #this file comes from the medication ingredient file and the procedure file, it has every instance of ici occuring in the data set, where each row is an ici administration.
@@ -28,15 +38,14 @@
 #related to agg_all_ici_cols_demographic_061323.csv, contains the listed ici start date for each prospective ici for a patient, even if they took more than 1
 #only neoplasm dx patients till end of 2021
 
-
 ###charleston_scores.csv#this file provides each patient ID, whether or not they have dx codes matching each prospective charleston criteria, and their charelston score. These patients are only ici patients#who took them up to the end of 2021
 
 ###oncdx_ids.csv#this file provides patient id's of all patients explicitly having some sort of neoplasm dx code
-
-
-
-
-
+#
+#
+#
+#
+#
 ######R files utilized to create data sets and results
 
 ###charleston_score.R
@@ -58,7 +67,21 @@
 #finally, this code creates ll_ici_demo_startdates_neo.csv, including additionally info on the first time a patient received each prospective ici. resulting csv files
 #all_ici_rows_061323.csv and agg_all_ici_cols_demographic_061323.csv are exclusively neoplasm dx patients and icis up to end of 2021
 
+###cardiac_aes.R
+#this script utilizes the diagnosis.csv file from trinetx, also it utilizes the all_ici_demo_startdates_neo.csv to bring all of the patient data to a single file
+#the script utilizes base R, as.data, and dplyr
+#the script creates unique entries for each occuring cardiac ae based on pre-selected icd-10 for each patient. It ultimately creates a new file titled 
+#all_cardio_ae_ici_demo_061323.csv, all events 
 
-
+###cardiac_aes_analysis.R
+#this file utilizes an pre-created csv from other files titled all_cardio_ae_ici_demo_061323.csv
+#utilizes many of the same packages as previously described 
+#this file organizes cardiac ae data further. first it characterizes patients as either experiecing myocarditis or pericarditis or both and which they experienced as their 
+#first adverse event. ultimately created firstici_firstae_dateoficis_061323.csv, listing date of first ae, the event, and ici dates as well in addition to demographic info
+#
+#
+#
+#
+#
 
 ######Tables/figures of interest
